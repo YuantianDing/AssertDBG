@@ -26,13 +26,13 @@ def load(data: dict):
 
 def dataset() -> Iterator[TestCase]:
     for row in load_dataset("bigcode/bigcodebench-hard", cache_dir=".cache")["v0.1.4"]:
-        with open("/tmp/testing_python_program.py", "w") as f:
-            f.write(row['complete_prompt'] + "\n" + row['canonical_solution'])
+        # with open("/tmp/testing_python_program.py", "w") as f:
+            # f.write(row['complete_prompt'] + "\n" + row['canonical_solution'])
         
-        p = subprocess.run(["python3", "/tmp/testing_python_program.py"], capture_output=True, timeout=60)
-        if p.returncode != 0:
-            print(colored("Test Failed: ", "red", attrs=["bold"]) + p.stderr.decode())
-            continue
+        # p = subprocess.run(["python3", "/tmp/testing_python_program.py"], capture_output=True, timeout=60)
+        # if p.returncode != 0:
+        #     print(colored("Test Failed: ", "red", attrs=["bold"]) + p.stderr.decode())
+        #     continue
             
-        # yield load(row)
-        yield row['libs']
+        yield load(row)
+        # yield row['libs']

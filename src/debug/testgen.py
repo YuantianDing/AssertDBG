@@ -1,14 +1,18 @@
 
 
 
+
+
+
 from .. import models
 from .split import FunctionCode
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.chain import LLMChain
 
 def task_solve(code: FunctionCode, main_function: FunctionCode):
     message = [
         SystemMessage(
-            "You are a professional software engineer. Your task is to implement a python subfunction function that satifies the user prompts. "
+            "You are a professional software tester. Your task is to implement a single test case for a python programming task "
             "User prompts includes a function name and signature, a docstring description, input/output assertions, test cases, and how the function is used in the main function. "
             "You only need to implement the function that satisfies the user prompts. "
             "Generate the function implementation as long as the signature. No testing needed. "
@@ -31,6 +35,6 @@ def task_solve(code: FunctionCode, main_function: FunctionCode):
             "\n"
         )
     ]
-    return models.MODELS["task"].with_structured_output(FunctionCode).invoke(message)
+    return LLMChain(models.MODELS["test"].with_structured_output(FunctionCode), message)
 
 

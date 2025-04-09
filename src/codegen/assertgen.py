@@ -13,6 +13,7 @@ def assertgen(code: FunctionCode):
             "* For each assertion, provide an error message that captures the useful variables in the scope. \n"
             "* Be sure to add an assertion at the end of the function to check if the output is desired. You may define helper functions if needed. \n"
             "* Try to use the function signature and the comments to guide your assertions. \n"
+            "* Do not change the functionality of the function. \n"
             "\n"
             "Respond with code as well as the function name. Remove all comments in the code except the docstring. \n"
         ), HumanMessage(
