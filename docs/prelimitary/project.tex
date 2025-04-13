@@ -1,0 +1,17 @@
+
+\section{Project Planning}
+
+We plan to evaluate the proposed assertion-based debugging framework on the HumanEvalPlus and MBPPPlus benchmarks~\cite{evalplus}, which contains a diverse set of programming tasks with natural language descriptions. We will compare the performance of our framework with the state-of-the-art tools mentioned previously. We will evaluate the effectiveness of the framework in detecting and correcting bugs in large language models (LLMs) and generating correct programs for complex programming tasks.
+
+We will try to answer the research questions mentioned in the introduction section based on the evaluation results. To achieve this, we will conduct a series of experiments assessing the debugging success rate, assertion effectiveness, and overall code correctness improvement. Specifically, we will analyze:
+
+\begin{enumerate}
+    \item The proportion of errors detected and corrected by the assertion-based approach compared to baseline methods.
+    \item The impact of assertion density on the debugging process and whether heavily-asserted programs lead to more effective debugging.
+    \item The robustness of the framework across different programming task complexities and error types.
+    \item The effect on the evaluation result of different possible designs of the multi-agent framework on the debugging process.
+\end{enumerate}
+
+Our evaluation methodology will include both quantitative and qualitative assessments. We will measure standard code evaluation metrics, such as pass rates on benchmark test cases, execution correctness, and debugging efficiency. Additionally, we will conduct an ablation study to determine the contribution of individual components, such as the divide and conquer agent, programmer agent, and debugger agent, to the overall performance.
+
+Finally, based on the findings, we will refine the framework to enhance its effectiveness in real-world debugging scenarios and explore potential improvements, such as integrating adaptive assertion generation and dynamic test case expansion.
