@@ -1,27 +1,59 @@
 
 
-from .. import models
+from pydantic import ValidationError
 from .split import FunctionCode
-from langchain_core.messages import SystemMessage, HumanMessage
+from openai import OpenAI
 
-def assertgen(code: FunctionCode):
-    message = [
-        SystemMessage(
-            "You are a professional software engineer. Your task is to add assertions to the function implemented by yourself that already satisfies the user prompts. "
-            "You need to add assertions to report potential bugs of the function, including input/output correctness check and loop invariants: \n"
-            "\n"
-            "* For each assertion, provide an error message that captures the useful variables in the scope. \n"
-            "* Be sure to add an assertion at the end of the function to check if the output is desired. You may define helper functions if needed. \n"
-            "* Try to use the function signature and the comments to guide your assertions. \n"
-            "* Do not change the functionality of the function. \n"
-            "\n"
-            "Respond with code as well as the function name. Remove all comments in the code except the docstring. \n"
-        ), HumanMessage(
-            f"```python\n"
-            f"{code.code}\n"
-            f"\n"
-            f"{code.testing_code}\n"
-            f"```\n"
-        )
-    ]
-    return models.MODELS["assert"].with_structured_output(FunctionCode).invoke(message)
+client = OpenAI()
+
+def system(content: str) -> dict:
+    return {"role": "system", "content": content}
+
+def user(content: str) -> dict:
+    return {"role": "user", "content": content}
+
+def assertgen_inner(code: FunctionCode) -> FunctionCode:
+    return client.beta.chat.completions.parse(
+        model="gpt-4o",
+        messages = [
+            system(
+                "You are a professional software engineer. Your task is to **add runtime assertions** to a function you have implemented, which already satisfies the user’s prompt.\n"
+                "\n"
+                "Your goal is to catch potential bugs by validating assumptions during execution, including:\n"
+                "\n"
+                "- **Input and output correctness**.\n"
+                "- **Loop invariants and intermediate state checks**, where applicable.\n"
+                "\n"
+                "Guidelines:\n"
+                "\n"
+                "- Each assertion must include an **informative error message** that references relevant variables in scope.\n"
+                "- **Always generate an assertion checking the exact logic specification of the output** to validate that the output is corrent. You may define helper functions to support this check.\n"
+                "- Use the **function signature and docstring** (if present) as guidance for the expected behavior and constraints.\n"
+                "- **Do not modify the core logic** of the function.\n"
+                # "- Mock testing will be used in the code. **Do not add any assertions to check types.** Also remove all the existing type checking assertions.  \n"
+                "- Remove all comments from the code **except for the docstring**.\n"
+                "- **Say it again, keep the doc string!**\n"
+                "\n"
+                "In your response, include:\n"
+                "\n"
+                "- The **function name**.\n"
+                "- The **full function code** with assertions added.\n"
+            ),
+            user(
+                f"```python\n"
+                f"{code.code}\n"
+                f"```\n"
+            )
+        ],
+        response_format=FunctionCode,
+    ).choices[0].message.parsed
+
+def assertgen(code: FunctionCode) -> FunctionCode:
+    f = None
+    for _ in range(4):
+        try:
+            f = assertgen_inner(code)            
+            break
+        except ValidationError as e:
+            continue
+    return f

@@ -7,6 +7,7 @@ from termcolor import colored
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
+import os
 
 def code_word_replace(code, id1, id2):
     result = "".join(id2 if word == id1 else word for word in re.split(r"(\w+)", code))
@@ -19,6 +20,7 @@ class TestCase:
     solution: str
     entry_point: str
     test: str
+    use: str
 
 
     def show(self):
@@ -32,17 +34,18 @@ class TestCase:
         result += "\n" * 3
         result += code
         result += "\n" * 3
-        result += self.test
+        result += code_word_replace(self.test, self.entry_point, function_name)
         result += "\n" * 3
         return result
         
     def run_test(self, code: str, function_name: str) -> tuple[bool, str] | None:
         assert function_name in code, f"Function `{function_name}` not found in code"
-        with open(f"/tmp/testing_python_program.py", "w") as f:
+        with open(f"/tmp/{hex(hash(code))[2:]}.py", "w") as f:
             f.write(self.testing_code(code, function_name))
         try:
-            testing_proc = subprocess.run(["python3", "/tmp/testing_python_program.py"], capture_output=True, timeout=60)
+            testing_proc = subprocess.run(["python3",  f"/tmp/{hex(hash(code))[2:]}.py"], capture_output=True, timeout=60)
         except subprocess.TimeoutExpired as e:
             return False, f"{e}"
-    
+        if testing_proc.returncode == 0:
+            os.remove(f"/tmp/{hex(hash(code))[2:]}.py")
         return testing_proc.returncode == 0, testing_proc.stderr.decode() if testing_proc.returncode != 0 else None
