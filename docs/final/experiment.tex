@@ -1,0 +1,19 @@
+\section{Experimental Result}
+
+Now I present the results of our assertion-based debugging framework on the HumanEvalPlus benchmark. I use a simplified version of the architecture in Figure \ref{fig:overview} with OpenAI \texttt{gpt-4o}. The result is shown in Table \ref{tab:result}. I compare our framework with the original \texttt{gpt-4o} model and a version of our framework without the assertion-based debugging. The results show that our framework outperforms both baselines, achieving a pass@1 rate of 88.27\% on the HumanEvalPlus benchmark, which is close to 89.6\% reported by the state of the art prompting method QualityFlow\cite{QualityFlow}.
+
+\begin{table}[ht]
+    \centering
+    \caption{Pass@1 Results on HumanEvalPlus}
+    \begin{tabular}{l c c c}
+        & pass@1 \\
+        \hline
+        GPT-4o & 83.43 \\
+        Ours (w/o Assert) & 85.18 \\
+        Ours (w/ Assert) & 88.27 \\
+    \end{tabular}
+\end{table}
+
+Comparing to the original \texttt{gpt-4o} model \footnote{Instructed the same as our programmer agent. }, our framework achieves a 4.84\% improvement in pass@1 rate. I also conducted an ablation study to evaluate the impact of assertion-based debugging on the performance of our framework. The results show that the pass@1 rate of our framework without assertion-based debugging is 85.18\%, which is 3.09\% loIr than the version with assertion-based debugging. This indicates that the assertion-based debugging method is effective in improving the correctness of LLM-generated code.
+
+Our implementation and testing results are available at Github\footnote{\href{https://github.com/YuantianDing/AssertDBG.git}{https://github.com/YuantianDing/AssertDBG.git}}. Due to the limited time and resources, I only test our framework on the HumanEvalPlus benchmark. I plan to extend our framework to other benchmarks such as MBPPPlus\cite{evalplus} and MHPP\cite{MHPP} in the future. 

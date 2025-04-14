@@ -1,0 +1,24 @@
+
+
+\section{Introduction}
+
+Code generation and program synthesis have emerged as transformative fields within machine learning, aiming to automate the process of software development. By leveraging advanced neural architectures—particularly large language models (LLMs)—these approaches translate natural language descriptions or formal specifications into executable code. This automation not only accelerates development cycles but also opens avenues for reducing human error and enhancing productivity in complex programming tasks.
+
+Recent advancements in LLMs have catalyzed transformative progress in automated code generation. While early approaches primarily focused on one-shot generation, emerging methodologies increasingly emphasize execution-based checking and multi-agent collaboration to address challenges such as subtle semantic errors and logical inconsistencies. In this context, a growing body of research explores mechanisms for self-debugging, testing, and multi-agent coordination to enhance both the reliability and efficiency of program synthesis.
+
+Notably, \cite{TeachSelfDebug} demonstrates that instructing LLMs to engage in self-reflection and error diagnosis can markedly improve the correctness of generated code. Complementing this, \cite{LEVER} introduces an execution-driven approach for assessing code accuracy, where the generation process is iteratively refined based on dynamic feedback obtained through code execution. This execution-based approach is further advanced in \cite{LDB}, which emulates human debugging by systematically verifying runtime behavior in a stepwise manner. 
+
+Parallel to these self-debugging and testing strategies, multi-agent frameworks have emerged as a powerful paradigm for code generation. Systems such as \cite{MetaGPT, MapCoder, QualityFlow} proposes an multi-agent workflow that integrates software engineering methodologies into the program synthesis process, including role specialization, structured communication, and iterative refinement. Similar architectures are also proposed in \cite{AgentCoder} and \cite{CODESIM}. Collectively, these studies underscore a paradigm shift from static, single-shot code generation towards dynamic, collaboration-driven methodologies. By combining self-debugging techniques with execution-based feedback and multi-agent coordination, recent research provides a promising roadmap for developing more robust, reliable, and adaptive code generation systems, laying the groundwork for future advancements in autonomous programming.
+
+Despite recent advances, several critical aspects of human debugging remain underexplored in current state-of-the-art methodologies. In practice, expert programmers routinely incorporate assertions into their code as a proactive measure to enforce correctness, thereby enabling the early detection and localization of bugs during runtime. These runtime checks not only streamline the debugging process but also enhance overall software reliability. For instance, languages like Java and Python automatically perform array boundary checks, offering a layer of protection that languages such as C do not inherently provide. In this project, I aim to investigate the efficacy of integrating assertion-guided strategies into LLM-driven code generation, leveraging these human-inspired debugging techniques to improve both the robustness and accuracy of synthesized code.
+
+% Here I list several research questions that I aim to address in this project:
+
+% \textbf{RQ1:} How can we effectively incorporate assertion-guided strategies into LLM-based code generation systems to enhance the reliability and correctness of synthesized code?
+
+% \textbf{RQ2:} To what extent do assertion-guided methodologies improve the efficiency and scalability of program synthesis, particularly in complex, large-scale applications?
+
+% \textbf{RQ3:} How can assertion-guided techniques be integrated with existing self-debugging, runtime checking, and multi-agent coordination strategies to develop a comprehensive, end-to-end framework for code generation that enhances both reliability and efficiency?
+
+
+
