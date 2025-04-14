@@ -1,7 +1,11 @@
+from datetime import timedelta
 from typing import Literal, Union
 from mirascope import BaseMessageParam, BaseTool
 from pydantic import BaseModel, Field, ValidationError
+from pydantic_cache import disk_cache
 from termcolor import colored
+
+from src.my_cache import my_cache
 from ..codegen.split import FunctionCode, SplittedTask
 from mirascope.core import openai, Messages
 from mirascope.core.openai.call_response import OpenAICallResponse
@@ -18,7 +22,31 @@ class RequestRework(BaseModel):
 class DebugAction(BaseModel):
     inner: Union[FixCode, RequestRework]
 
-def debug(code: SplittedTask, test: FunctionCode, error: str, verbose: int = 0):
+    def perform(self, code: SplittedTask, test: FunctionCode, verbose: int = 0) -> bool:
+        functions = {}
+        functions[test.function_name] = test
+        functions[code.main_func.function_name] = code.main_func
+        for i in range(len(code.subfunctions)):
+            functions[code.subfunctions[i].function_name] = code.subfunctions[i]
+            assert functions[code.subfunctions[i].function_name] is code.subfunctions[i]
+
+        if self.inner.action == "request_rework":
+            return False
+        else:
+            if verbose > 4:
+                print(colored("Generated Fix: ", "green", attrs=["bold"]))
+            
+            for f in self.inner.functions:
+                if f.function_name in functions:
+                    functions[f.function_name].code = f.code
+                    if verbose > 4:
+                        functions[f.function_name].pretty_print("| ")
+            return True
+
+@my_cache(".cache/debug")
+def debug(code: SplittedTask, test: FunctionCode, error: str, verbose: int = 0) -> DebugAction:
+    if verbose > 1:
+        print(colored("LLM Debuging...", "yellow", attrs=["bold"]))
     functions = {}
     functions[test.function_name] = test
     functions[code.main_func.function_name] = code.main_func
@@ -35,7 +63,8 @@ def debug(code: SplittedTask, test: FunctionCode, error: str, verbose: int = 0):
         function_name: str = Field(description="The name of the function requested.")
         
         def call(self)  -> Union[str, None]:
-            # print(f"Model viewed function {self.function_name}")
+            if verbose > 2:
+                print(colored("Model Viewing: ", "green") + self.function_name)
             if self.function_name in functions:
                 return Messages.System(
                     f"[view_func] Viewing function {self.function_name}:\n"
@@ -60,7 +89,9 @@ def debug(code: SplittedTask, test: FunctionCode, error: str, verbose: int = 0):
             "Once you’ve identified the cause of the bug, choose one of the following actions:\n"
             "\n"
             "- **`fix_code`**: Propose a fix by rewriting any and all functions that should be modified. Include only the updated versions.\n"
-            "- **`request_rework`**: Recommend a complete reimplementation of the codebase. Use this when the code is poorly structured or contains errors that are too difficult to locate and resolve incrementally.\n"
+            "- **`request_rework`**: Recommend a complete reimplementation of the codebase. \n"
+            "    Use this when the code is poorly structured or contains errors that are too difficult to locate and resolve incrementally. \n"
+            "    This is primarily useful for syntax errors and timeouts. \n"
             "\n"
             "Guidelines:\n"
             "\n"
@@ -90,19 +121,11 @@ def debug(code: SplittedTask, test: FunctionCode, error: str, verbose: int = 0):
         if isinstance(fix_resp, OpenAICallResponse):
             messages += [ fix_resp.tool.call() ]
         elif isinstance(fix_resp, DebugAction):
-            if fix_resp.inner.action == "request_rework":
-                return False
-            else:
-                if verbose > 4:
-                    print(colored("Generated Fix: ", "green", attrs=["bold"]))
-                if not all(f.function_name in f.code for f in fix_resp.inner.functions):
-                    continue
-                 
-                for f in fix_resp.inner.functions:
-                    if f.function_name in functions:
-                        functions[f.function_name].code = f.code
-                        if verbose > 4:
-                            functions[f.function_name].pretty_print("| ")
-                return True
+            if fix_resp.inner.action == "fix_code" and not all(f.function_name in f.code for f in fix_resp.inner.functions):
+                continue
+            return fix_resp
+        else:
+            raise ValueError(f"Unexpected response type: {type(fix_resp)}")
+            
 
     

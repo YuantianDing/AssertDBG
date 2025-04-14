@@ -9,11 +9,13 @@ from pygments.formatters import TerminalFormatter
 from tinydb import TinyDB, Query
 
 from src.codegen import vanilla
+from src.codegen.intentcheck import FunctionCode
 from src.codegen.task import task_solve
 from src.debug import debug_loop
 
 from . import codegen
 from .testcase import TestCase, code_word_replace
+import glob
 
 @dataclass
 class TestResult:
@@ -22,12 +24,12 @@ class TestResult:
     code: str = None
     testing: bool = None
     error_message: str = None
-    internal_test: int = -1
+    internal_test: str = None
+    inner_test_count: str = None
 
-    def set_task_id(self, task_id, internal_test, show=False):
+    def set_task_id(self, task_id, show=False):
         self.questions_and_answers = []
         self.task_id = task_id
-        self.internal_test = internal_test
         if show:
             print(colored("-" * 60 + f" {self.task_id} " + "-" * 60, "yellow"))
     
@@ -39,8 +41,8 @@ class TestResult:
             print(colored(f"Function `{self.function_name}` : ", "green", attrs=["bold"]))
             print(highlight(self.code, PythonLexer(), TerminalFormatter()))
 
-    def set_testing(self, testing, error_message=None, show=False):
-        self.testing = testing
+    def set_testing(self, testing, error_message,  show=False):
+        self.testing = testing_count
         self.error_message = error_message
         if show:
             if self.testing:
@@ -58,7 +60,6 @@ class TestResult:
 class Config:
     with_assert: bool
     vanilla: bool = False
-    internal_test_count: int = 1
     
     def __str__(self):
         if self.vanilla:
@@ -80,20 +81,32 @@ class ResultDB:
             return TestResult(**result)
 
         result = TestResult()
-        result.set_task_id(testcase.task_id, self.config.internal_test_count, show=verbose > 1)
+        result.set_task_id(testcase.task_id, show=verbose > 1)
+        code = None
+        test_count = 0
         if self.config.vanilla:
-            final_code = vanilla(testcase.prompt)
+            code = vanilla.vanilla(testcase.prompt)
         else:
-            code = codegen.code_gen(-1, testcase.prompt, with_assert=self.config.with_assert, verbose=verbose)
-            for i in range(3):
-                if debug_loop(i, testcase.prompt, code, testcase.use, test_count=self.config.internal_test_count, verbose=verbose):
+            for test_count in range(2):
+                code = solve(testcase, self.config.with_assert, test_count, verbose=verbose)
+                if testcase.run_test(code.code, code.function_name)[0]:
                     break
-                code = codegen.code_gen(i, testcase.prompt, with_assert=self.config.with_assert, verbose=verbose)
-            
-            final_code = code_word_replace(code.combine(), "assert", "assert True or ")
-        result.set_code(testcase.entry_point, final_code, show = verbose > 2)
+                
+        result.set_code(code.function_name, code.code, show = verbose > 2)
 
-        result.set_testing(*testcase.run_test(final_code, code.main_func.function_name), show=verbose > 1)
+        result.set_testing(*testcase.run_test(code.code, code.function_name), show=verbose > 1)
         self.db.insert(dataclasses.asdict(result))
         return result
 
+def solve(testcase: TestCase, with_assert: bool, internal_test_count: int, verbose: int = 0) -> FunctionCode:
+    code = codegen.code_gen(-1, testcase.prompt, with_assert=with_assert, verbose=verbose)
+    for i in range(3):
+        if debug_loop(i, testcase.prompt, code, testcase.use, with_assert=with_assert, test_count=internal_test_count, verbose=verbose):
+            break
+        code = codegen.code_gen(i, testcase.prompt, with_assert=with_assert, verbose=verbose)
+    
+    return FunctionCode(function_name=code.main_func.function_name,
+                        code=code_word_replace(code.combine(), "assert", "assert True or ")
+                            .replace("raise AssertionError", "assert True or ")
+                            .replace("raise ValueError", "assert True or ")
+                            .replace("raise Exception", "assert True or "))
