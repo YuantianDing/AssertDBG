@@ -2,12 +2,16 @@
 from datetime import timedelta
 from pydantic_cache import disk_cache
 from termcolor import colored
+
+from src.my_cache import my_cache
 from .task import task_solve
 from .assertgen import assertgen
 from .split import SplittedTask, split
 
-@disk_cache(path=".cache/code_gen", ttl=timedelta(days=2000))
+@my_cache(".cache/code_gen")
 def code_gen(attempt: int, prompt: str, with_assert: bool = True, verbose: int = 0) -> SplittedTask:
+    if verbose > 1:
+        print(colored("LLM Generating Code... ", "yellow", attrs=["bold"]))
     splitted_tasks = split(prompt)
     assert splitted_tasks is not None, "Splitting failed"
     if verbose > 3:
@@ -27,7 +31,7 @@ def code_gen(attempt: int, prompt: str, with_assert: bool = True, verbose: int =
         print("\n")
 
     fnames = set([splitted_tasks.main_func.function_name] + [f.function_name for f in splitted_tasks.subfunctions])
-    assert len(fnames) == len(splitted_tasks.subfunctions) + 1
+    assert len(fnames) == len(splitted_tasks.subfunctions) + 1, [splitted_tasks.main_func.function_name] + [f.function_name for f in splitted_tasks.subfunctions]
     return splitted_tasks
 
 

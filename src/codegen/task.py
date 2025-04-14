@@ -21,8 +21,9 @@ def task_solve_inner(code: FunctionCode, main_function: FunctionCode, remove_ass
             "Your responsibilities:\n"
             "\n"
             "- **Implement the function** according to the provided signature and description. Your implementation must accurately match the function signature and docstring provided in the prompt. \n"
-            "- You should try to use the simple implementation that guarrentee safety and reduce error. Try to avoid complex algorithm. \n"
-            "- You may use any libraries needed. Make sure to put the imports **before** the function signature.\n"
+            "- You should try to use the simplest algorithm that guarrentee safety and reduce error. Try to **avoid complex algorithm and keep the codebase small** !!!!!!!!! \n"
+            "- If there are **any common python libraries** (Sympy, for example) that already implemented the main functions or the subfunctions, **DO NOT REINVENT THE WHEEL** and implement the code yourself !!!!!!!\n"
+            "- Make sure to put the imports **before** the function signature.\n"
             "- Include **only the function implementation** (with signature) — **no test code** is required.\n"
             "- Add **clear, concise comments** to explain your logic and design choices.\n"
             "- Ensure **strict consistency** with the input/output types, expected behavior, and any exceptions described in the user prompt.\n"
@@ -47,7 +48,9 @@ def task_solve_inner(code: FunctionCode, main_function: FunctionCode, remove_ass
     ]
 
 def task_solve(code: FunctionCode, main_function: FunctionCode, remove_assert: bool = False) -> FunctionCode:
+    f = None
     for _ in range(4):
         f = task_solve_inner(code, main_function, remove_assert)
         if code.function_name == f.function_name and f.function_name in f.code and intent_check(f):
-            return f
+            break
+    return f

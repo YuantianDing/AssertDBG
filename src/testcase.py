@@ -40,12 +40,11 @@ class TestCase:
         
     def run_test(self, code: str, function_name: str) -> tuple[bool, str] | None:
         assert function_name in code, f"Function `{function_name}` not found in code"
-        with open(f"/tmp/{hex(hash(code))[2:]}.py", "w") as f:
+        file_name = f".test/{self.task_id.split('/')[1]}_{hex(hash(code))[2:]}.py"
+        with open(file_name, "w") as f:
             f.write(self.testing_code(code, function_name))
         try:
-            testing_proc = subprocess.run(["python3",  f"/tmp/{hex(hash(code))[2:]}.py"], capture_output=True, timeout=60)
+            testing_proc = subprocess.run(["python3",  file_name], capture_output=True, timeout=60)
         except subprocess.TimeoutExpired as e:
             return False, f"{e}"
-        if testing_proc.returncode == 0:
-            os.remove(f"/tmp/{hex(hash(code))[2:]}.py")
         return testing_proc.returncode == 0, testing_proc.stderr.decode() if testing_proc.returncode != 0 else None

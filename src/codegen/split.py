@@ -1,4 +1,6 @@
 
+import re
+import subprocess
 from mirascope import BaseMessageParam
 from mirascope.core import Messages, openai
 from pydantic import BaseModel, Field, ValidationError
@@ -8,6 +10,7 @@ from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
 
 from src.codegen.intentcheck import intent_check, FunctionCode
+
 
 class SplittedTask(BaseModel):
     """
@@ -45,7 +48,9 @@ def split_inner(prompt: str):
             "\n"
             "Guidelines:\n"
             "\n"
-            "- You should try to use the simplest algorithm that guarrentee safety and reduce error. Try to avoid complex algorithm. \n"
+            "- You should try to use the simplest algorithm that guarrentee safety and reduce error. Try to **avoid complex algorithm and keep the codebase small** !!!!!!!!! \n"
+            "- If there are **any common python libraries** (Sympy, for example) that already implemented the main functions or the subfunctions, **DO NOT REINVENT THE WHEEL** and implement the code yourself !!!!!!!\n"
+            "- Say it again, use the common libraries !!! \n"
             "- Ensure that subfunctions are **independent**, reusable, and testable in isolation.\n"
             "- **Do not implement** the body of the subfunctions — only provide the interface, documentation, and assertions. Make sure to implement the main function. \n"
             "- Favor **keeping complexity in the subfunctions** and the main function **as simple as possible**.\n"
@@ -65,6 +70,13 @@ def split(prompt: str) -> SplittedTask:
         except ValidationError as e:
             print(colored(f"Validation Error: split {e}", "red"))
             continue
+        match = re.search(r'("""(.*?)""")', prompt, flags=re.DOTALL)
+        if match:
+            doc = match.group(2).strip()
+        else:
+            doc = ""
+
+        f.main_func.code = re.sub(r'(""".*?""")', f'"""{doc}"""', f.main_func.code, count=1, flags=re.DOTALL)
         if intent_check(f.main_func):
             return f
     return f

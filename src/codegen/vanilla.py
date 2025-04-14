@@ -1,12 +1,16 @@
 
+from datetime import timedelta
 from mirascope import BaseMessageParam
+from pydantic_cache import disk_cache
 
+from src.my_cache import my_cache
 from src.codegen.intentcheck import intent_check
 from .split import FunctionCode
 from mirascope.core import Messages, openai
 
+@my_cache(".cache/vanilla")
 @openai.call(model="gpt-4o", response_model=FunctionCode)
-def vanilla(code: FunctionCode) -> list[BaseMessageParam]:
+def vanilla(prompt: str) -> FunctionCode:
     return [
         Messages.System(
             "You are a professional software engineer. Your task is to **implement a Python function** that fully satisfies the user’s specifications.\n"
@@ -28,7 +32,7 @@ def vanilla(code: FunctionCode) -> list[BaseMessageParam]:
         ), 
         Messages.User(
             f"```python\n"
-            f"{code.code}\n"
+            f"{prompt}\n"
             f"```\n"
         )
     ]
