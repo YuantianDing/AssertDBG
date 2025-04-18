@@ -12,4 +12,4 @@ After I rerun the result, it turns out the original result is not very accurate.
 |  | Vanila GPT-4 | Without Assertion | With Assertion  |
 | :-: |  :-: |  :-: |  :-: |
 | pass@1 | 83.5  | 86.5  |  83.5 |
-| pass@3 | 93.29  | 92.07  | 80.48  |
+| pass@3 | 80.48 | 92.07  | 93.29  |
