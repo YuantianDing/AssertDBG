@@ -18,8 +18,8 @@ for directory in [".cache/code_gen", ".cache/debug", ".cache/test_gen", ".cache/
 
 dbs = [
     ResultDB("results", Config(True)),
-	# ResultDB("results", Config(False)),
-	# ResultDB("results", Config(False, vanilla=True)),
+	ResultDB("results", Config(False)),
+	ResultDB("results", Config(False, vanilla=True)),
 ]
 
 ds = list(humaneval.dataset())

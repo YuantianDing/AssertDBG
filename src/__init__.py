@@ -42,7 +42,8 @@ class TestResult:
             print(highlight(self.code, PythonLexer(), TerminalFormatter()))
 
     def set_testing(self, testing, error_message,  show=False):
-        self.testing = testing_count
+        # self.testing = testing_count
+        self.testing = testing
         self.error_message = error_message
         if show:
             if self.testing:

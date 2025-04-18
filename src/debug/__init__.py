@@ -11,7 +11,7 @@ from ..codegen.split import FunctionCode, SplittedTask
 
 
 
-def debug_loop(attempt: int, prompt: str, code: SplittedTask, use: str, with_assert: bool, test_count: int, debug_attempts: int = 20, verbose: int = 0) -> bool:
+def debug_loop(attempt: int, prompt: str, code: SplittedTask, use: str, with_assert: bool, test_count: int, debug_attempts: int = 10, verbose: int = 0) -> bool:
     test_funcs = [test_gen(i, prompt, add_error_msg=with_assert) for i in range(test_count)]
     timeout_limit = 3
     for testf in test_funcs:
