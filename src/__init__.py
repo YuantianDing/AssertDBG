@@ -84,18 +84,25 @@ class ResultDB:
         result = TestResult()
         result.set_task_id(testcase.task_id, show=verbose > 1)
         code = None
-        test_count = 0
-        if self.config.vanilla:
-            code = vanilla.vanilla(testcase.prompt)
-        else:
-            for test_count in range(2):
-                code = solve(testcase, self.config.with_assert, test_count, verbose=verbose)
-                if testcase.run_test(code.code, code.function_name)[0]:
-                    break
-                
-        result.set_code(code.function_name, code.code, show = verbose > 2)
+        testing, stderr = None, None
+        for attempt in range(3):
+            print(colored(f"Attempt {attempt}", attrs=["bold"]))
+            test_count = 0
+            if self.config.vanilla:
+                code = vanilla.vanilla(testcase.prompt)
+            else:
+                for test_count in range(2):
+                    code = solve(testcase, self.config.with_assert, test_count, verbose=verbose)
+                    if testcase.run_test(code.code, code.function_name)[0]:
+                        break
+            testing, stderr = testcase.run_test(code.code, code.function_name)
+            result.set_code(code.function_name, code.code, show = verbose > 2)
+            result.set_testing(testing, stderr, show=verbose > 1)
+            if testing:
+                break
+            testcase.prompt += " "
 
-        result.set_testing(*testcase.run_test(code.code, code.function_name), show=verbose > 1)
+        
         self.db.insert(dataclasses.asdict(result))
         return result
 

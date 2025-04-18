@@ -45,7 +45,6 @@ def debug_loop(attempt: int, prompt: str, code: SplittedTask, use: str, with_ass
                 print(colored(f"Inner Testing Error: {i}", 'red'))
                 print(error)
             action = debug(code, testf, error, verbose=verbose)
-            print("A")
             if not action.perform(code, testf, verbose=verbose):
                 return False
     return True

@@ -1,0 +1,10 @@
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
+python3 bench.py
