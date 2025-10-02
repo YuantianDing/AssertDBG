@@ -1,7 +1,7 @@
 
 # AssertDBG
 
-Term paper is ready at `docs/final/main/pdf`
+Term paper is ready at [`docs/final/main/pdf`](https://github.com/YuantianDing/AssertDBG/blob/main/docs/final/main.pdf)
 
 
 # Problem of the Result.
